@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -22,37 +22,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
-#define DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#ifndef DUX_SYSTEM_DEVICE_DEVICE_CONSOLE_H
+#define DUX_SYSTEM_DEVICE_DEVICE_CONSOLE_H
 
-#include <dux/system/device/IDevice.h>
-#include <dux/types.h>
-#include <stddef.h>
+#include <dux/system/device/ICharDevice.h>
 
-namespace dux::system::device
-{
-class IBlockDevice : public IDevice
+namespace dux::system::device::video {
+
+class IConsole : public ICharDevice
 {
 public:
-    ~IBlockDevice() = default;
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kBlock;
-    }
-
-    virtual size_t blockSize() const noexcept = 0;
-    virtual uint64_t blockCount() const noexcept = 0;
-
-    virtual ssize_t readBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        void *buffer) = 0;
-
-    virtual ssize_t writeBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        const void *buffer) = 0;
+    virtual ~IConsole() = default;
+    virtual int writeChar(int c, int attr) = 0;
+    virtual int writeString(const char *str, int attr) = 0;
 };
-}
+} // namespace dux::system::device::video
 
-#endif //DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#endif //DUX_SYSTEM_DEVICE_DEVICE_CONSOLE_H

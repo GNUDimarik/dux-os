@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -22,37 +22,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
-#define DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#ifndef DUX_X86_EARLYCONSOLE_H
+#define DUX_X86_EARLYCONSOLE_H
 
-#include <dux/system/device/IDevice.h>
-#include <dux/types.h>
-#include <stddef.h>
+#include "dux/system/device/AbstractDevice.h"
+#include <dux/system/device/video/IConsole.h>
+#include <errno.h>
 
-namespace dux::system::device
+namespace dux::arch::x86::video {
+class EarlyConsole : public system::device::AbstractDevice<dux::system::device::video::IConsole>
 {
-class IBlockDevice : public IDevice
-{
+    using BaseClass = system::device::AbstractDevice<dux::system::device::video::IConsole>;
+
 public:
-    ~IBlockDevice() = default;
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kBlock;
-    }
+    static constexpr system::device::DeviceId kDeviceId = 0;
+    static constexpr char kDeviceName[] = "x86EarlyConsole";
 
-    virtual size_t blockSize() const noexcept = 0;
-    virtual uint64_t blockCount() const noexcept = 0;
-
-    virtual ssize_t readBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        void *buffer) = 0;
-
-    virtual ssize_t writeBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        const void *buffer) = 0;
+    EarlyConsole();
+    int writeChar(int c, int attr) override;
+    int writeString(const char *str, int attr) override;
 };
-}
+} // namespace dux::arch::x86::video
 
-#endif //DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#endif //DUX_X86_EARLYCONSOLE_H

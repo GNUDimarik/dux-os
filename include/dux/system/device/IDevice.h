@@ -47,6 +47,7 @@ public:
     virtual DeviceType type() const noexcept = 0;
 
     virtual int ioctl(unsigned long request, void *argument) = 0;
+    virtual int flush() = 0;
 };
 
 }

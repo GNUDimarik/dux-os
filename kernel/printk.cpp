@@ -22,37 +22,45 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
-#define DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#include <dux/kernel/console.h>
+#include <dux/kernel/printk.h>
 
-#include <dux/system/device/IDevice.h>
-#include <dux/types.h>
-#include <stddef.h>
+static constexpr char kPanicMessage[] = "Kernel panic: ";
+static constexpr size_t kBufferSize = 1024;
 
-namespace dux::system::device
+namespace dux::kernel {
+
+int vprintk(const char *fmt, va_list args)
 {
-class IBlockDevice : public IDevice
-{
-public:
-    ~IBlockDevice() = default;
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kBlock;
+    char buffer[kBufferSize];
+    const int ret = vsnprintf(buffer, sizeof(buffer), fmt, args);
+
+    if (ret > 0) {
+        console_write(buffer, ret < kBufferSize ? ret : kBufferSize - 1);
     }
 
-    virtual size_t blockSize() const noexcept = 0;
-    virtual uint64_t blockCount() const noexcept = 0;
-
-    virtual ssize_t readBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        void *buffer) = 0;
-
-    virtual ssize_t writeBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        const void *buffer) = 0;
-};
+    return ret;
 }
 
-#endif //DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+int printk(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    const int result = vprintk(fmt, ap);
+    va_end(ap);
+    return result;
+}
+
+[[noreturn]] void panic(const char *fmt, ...)
+{
+    console_write(kPanicMessage, sizeof(kPanicMessage) - 1);
+    va_list ap;
+    va_start(ap, fmt);
+    vprintk(fmt, ap);
+    va_end(ap);
+
+    for (;;) {
+    }
+}
+
+} // namespace dux::kernel

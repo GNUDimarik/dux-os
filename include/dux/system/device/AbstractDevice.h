@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -21,27 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H
-#define DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H
+#ifndef DUX_ABSTRACTDEVICE_H
+#define DUX_ABSTRACTDEVICE_H
 
 #include <dux/system/device/IDevice.h>
-#include <dux/types.h>
-#include <stddef.h>
+#include <errno.h>
 
-namespace dux::system::device
-{
-class ICharacterDevice: public IDevice
+namespace dux::system::device {
+template<typename _Interface>
+class AbstractDevice : public _Interface
 {
 public:
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kCharacter;
-    }
+    AbstractDevice(DeviceId id, const char *name)
+        : id_(id)
+        , name_(name)
+    {}
+    [[nodiscard]] DeviceId id() const noexcept override { return id_; }
+    const char *name() const noexcept override { return name_; }
+    int ioctl(unsigned long request, void *argument) override { return -ENOTSUP; }
+    int flush() override { return 0; }
 
-    virtual ssize_t read(void *buffer, size_t size) = 0;
-    virtual ssize_t write(const void *buffer, size_t size) = 0;
+private:
+    DeviceId id_;
+    const char *name_;
 };
-}
+} // namespace dux::system::device
 
-#endif //DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H
+#endif //DUX_ABSTRACTDEVICE_H

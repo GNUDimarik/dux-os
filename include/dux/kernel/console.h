@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -22,37 +22,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
-#define DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#ifndef DUX_KERNEL_CONSOLE_H
+#define DUX_KERNEL_CONSOLE_H
 
-#include <dux/system/device/IDevice.h>
-#include <dux/types.h>
 #include <stddef.h>
 
-namespace dux::system::device
-{
-class IBlockDevice : public IDevice
-{
-public:
-    ~IBlockDevice() = default;
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kBlock;
-    }
-
-    virtual size_t blockSize() const noexcept = 0;
-    virtual uint64_t blockCount() const noexcept = 0;
-
-    virtual ssize_t readBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        void *buffer) = 0;
-
-    virtual ssize_t writeBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        const void *buffer) = 0;
-};
+namespace dux::kernel {
+int console_write(const char *str, size_t len);
 }
 
-#endif //DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#endif //DUX_KERNEL_CONSOLE_H

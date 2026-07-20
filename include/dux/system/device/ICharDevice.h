@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
-#define DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#ifndef DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H
+#define DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H
 
 #include <dux/system/device/IDevice.h>
 #include <dux/types.h>
@@ -31,28 +31,18 @@
 
 namespace dux::system::device
 {
-class IBlockDevice : public IDevice
+class ICharDevice: public IDevice
 {
 public:
-    ~IBlockDevice() = default;
+    ~ICharDevice() = default;
     DeviceType type() const noexcept final
     {
-        return DeviceType::kBlock;
+        return DeviceType::kCharacter;
     }
 
-    virtual size_t blockSize() const noexcept = 0;
-    virtual uint64_t blockCount() const noexcept = 0;
-
-    virtual ssize_t readBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        void *buffer) = 0;
-
-    virtual ssize_t writeBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        const void *buffer) = 0;
+    virtual ssize_t read(void *buffer, size_t size) = 0;
+    virtual ssize_t write(const void *buffer, size_t size) = 0;
 };
 }
 
-#endif //DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#endif //DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H

@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -22,37 +22,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
-#define DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#ifndef DUX_KERNEL_PRINTK_H
+#define DUX_KERNEL_PRINTK_H
 
-#include <dux/system/device/IDevice.h>
-#include <dux/types.h>
-#include <stddef.h>
+#include <libstdc/printf.h>
 
-namespace dux::system::device
-{
-class IBlockDevice : public IDevice
-{
-public:
-    ~IBlockDevice() = default;
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kBlock;
-    }
+namespace dux::kernel {
 
-    virtual size_t blockSize() const noexcept = 0;
-    virtual uint64_t blockCount() const noexcept = 0;
+int printk(const char *fmt, ...);
+int vprintk(const char *fmt, va_list args);
+int vprintk(const char *fmt, va_list args);
+[[noreturn]] void panic(const char *fmt, ...);
+} // namespace dux::kernel
 
-    virtual ssize_t readBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        void *buffer) = 0;
-
-    virtual ssize_t writeBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        const void *buffer) = 0;
-};
-}
-
-#endif //DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#endif //DUX_KERNEL_PRINTK_H

@@ -22,37 +22,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
-#define DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#ifndef DUX_X86_ASM_H
+#define DUX_X86_ASM_H
 
-#include <dux/system/device/IDevice.h>
-#include <dux/types.h>
-#include <stddef.h>
+#define SYM_FUNC_START(name)        \
+    .globl name;           \
+    .type name, @function; \
+name:
 
-namespace dux::system::device
-{
-class IBlockDevice : public IDevice
-{
-public:
-    ~IBlockDevice() = default;
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kBlock;
-    }
+#define HIDDEN_ENTRY(name) \
+    .globl name;           \
+    .hidden name;          \
+    .type name, @function; \
+name:
 
-    virtual size_t blockSize() const noexcept = 0;
-    virtual uint64_t blockCount() const noexcept = 0;
+#define SYM_FUNC_END(name) .size name, . - name
 
-    virtual ssize_t readBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        void *buffer) = 0;
+#define LOCAL(name) .L##name
+#define EXT_C(name) name
 
-    virtual ssize_t writeBlocks(
-        uint64_t firstBlock,
-        size_t blockCount,
-        const void *buffer) = 0;
-};
-}
-
-#endif //DUX_SYSTEM_DEVICE_IBLOCKDEVICE_H
+#endif //DUX_X86_ASM_H
