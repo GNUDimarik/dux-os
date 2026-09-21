@@ -22,15 +22,22 @@
  * THE SOFTWARE.
  */
 
+#include <asm/cpu.h>
+#include <dux/irq_save_lock.h>
 #include <dux/kernel/console.h>
 #include <dux/kernel/printk.h>
+#include <dux/spin_lock.h>
 
 static constexpr char kPanicMessage[] = "Kernel panic: ";
 static constexpr size_t kBufferSize = 1024;
 
 namespace dux::kernel {
 
-int vprintk(const char *fmt, va_list args)
+namespace {
+dux::spin_lock global_lock;
+} // namespace
+
+static int vprintk_unlocked(const char *fmt, va_list args)
 {
     char buffer[kBufferSize];
     const int ret = vsnprintf(buffer, sizeof(buffer), fmt, args);
@@ -42,24 +49,33 @@ int vprintk(const char *fmt, va_list args)
     return ret;
 }
 
+int vprintk(const char *fmt, va_list args)
+{
+    irq_save_lock l(global_lock);
+    return vprintk_unlocked(fmt, args);
+}
+
 int printk(const char *fmt, ...)
 {
+    irq_save_lock l(global_lock);
     va_list ap;
     va_start(ap, fmt);
-    const int result = vprintk(fmt, ap);
+    const int result = vprintk_unlocked(fmt, ap);
     va_end(ap);
     return result;
 }
 
 [[noreturn]] void panic(const char *fmt, ...)
 {
+    irq_save_lock l(global_lock);
     console_write(kPanicMessage, sizeof(kPanicMessage) - 1);
     va_list ap;
     va_start(ap, fmt);
-    vprintk(fmt, ap);
+    vprintk_unlocked(fmt, ap);
     va_end(ap);
 
     for (;;) {
+        cpu_halt();
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -22,38 +22,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_DEVICE_H
-#define DUX_SYSTEM_DEVICE_DEVICE_H
+#ifndef DUX_IRQ_SAVE_LOCK_H
+#define DUX_IRQ_SAVE_LOCK_H
 
-#include <dux/types.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <dux/spin_lock.h>
 
-namespace dux::system::device {
-
-using DeviceId = uint32_t;
-
-enum class DeviceType {
-    kBlock,
-    kCharacter,
-};
-
-class IDevice
+namespace dux {
+template<typename T>
+class irq_save_lock
 {
 public:
-    virtual ~IDevice() = default;
+    explicit irq_save_lock(T &lock)
+        : lock_(lock)
+    {
+        // TODO: save interrupt flag here
+        lock_.lock();
+    }
+    ~irq_save_lock()
+    {
+        // TODO: restore interrupt flag here
+        lock_.unlock();
+    }
 
-    virtual DeviceId id() const noexcept = 0;
-    virtual const char *name() const noexcept = 0;
-    virtual DeviceType type() const noexcept = 0;
-
-    virtual int ioctl(unsigned long request, void *argument) = 0;
-    virtual int flush() = 0;
-
-    virtual ssize_t read(void *buffer, size_t size) = 0;
-    virtual ssize_t write(const void *buffer, size_t size) = 0;
+private:
+    T &lock_;
 };
+} // namespace dux
 
-} // namespace dux::system::device
-
-#endif //DUX_SYSTEM_DEVICE_DEVICE_H
+#endif //DUX_IRQ_SAVE_LOCK_H

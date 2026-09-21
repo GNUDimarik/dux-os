@@ -16,14 +16,17 @@
  */
 
 #define ASM_FILE	1
-#include <multiboot2.h>
+#include <asm/asm.h>
+#include <gnu/multiboot2.h>
 
 /* C symbol format. HAVE_ASM_USCORE is defined by configure.  */
-#ifdef HAVE_ASM_USCORE
+/*#ifdef HAVE_ASM_USCORE
 # define EXT_C(sym)			_ ## sym
 #else
 # define EXT_C(sym)			sym
-#endif
+#endif*/
+
+#define GRUB_MULTIBOOT_ARCHITECTURE_I386 0
 
 /* The size of our stack (16KB).  */
 #define STACK_SIZE			0x4000
@@ -54,15 +57,9 @@ multiboot_header:
 /* Header length.  */
 .long	multiboot_header_end - multiboot_header
 /* checksum */
-.long	-(MULTIBOOT2_HEADER_MAGIC + GRUB_MULTIBOOT_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header))
-framebuffer_tag_start:
-.short MULTIBOOT_HEADER_TAG_FRAMEBUFFER
-.short MULTIBOOT_HEADER_TAG_OPTIONAL
-.long framebuffer_tag_end - framebuffer_tag_start
-.long 1024
-.long 768
-.long 32
-framebuffer_tag_end:
+.long   0x100000000 - MULTIBOOT2_HEADER_MAGIC \
+        - GRUB_MULTIBOOT_ARCHITECTURE_I386 \
+        - (multiboot_header_end - multiboot_header)
 .short MULTIBOOT_HEADER_TAG_END
 .short 0
 .long 8
@@ -82,16 +79,6 @@ pushl	%eax
 
 /* Now enter the C main function...  */
 call	EXT_C(cmain)
-
-/* Halt.  */
-pushl	$halt_message
-    call	EXT_C(printk)
-
-    loop:	hlt
-    jmp	loop
-
-    halt_message:
-.asciz	"Halted."
 
 /* Our stack area.  */
 .comm	stack, STACK_SIZE

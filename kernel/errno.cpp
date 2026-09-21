@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -22,38 +22,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_DEVICE_H
-#define DUX_SYSTEM_DEVICE_DEVICE_H
+#include <config.h>
 
-#include <dux/types.h>
-#include <stddef.h>
-#include <stdint.h>
+__BEGIN_DECLS
 
-namespace dux::system::device {
+int errno;
 
-using DeviceId = uint32_t;
-
-enum class DeviceType {
-    kBlock,
-    kCharacter,
-};
-
-class IDevice
-{
-public:
-    virtual ~IDevice() = default;
-
-    virtual DeviceId id() const noexcept = 0;
-    virtual const char *name() const noexcept = 0;
-    virtual DeviceType type() const noexcept = 0;
-
-    virtual int ioctl(unsigned long request, void *argument) = 0;
-    virtual int flush() = 0;
-
-    virtual ssize_t read(void *buffer, size_t size) = 0;
-    virtual ssize_t write(const void *buffer, size_t size) = 0;
-};
-
-} // namespace dux::system::device
-
-#endif //DUX_SYSTEM_DEVICE_DEVICE_H
+__END_DECLS

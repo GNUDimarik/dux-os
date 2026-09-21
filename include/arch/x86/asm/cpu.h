@@ -1,5 +1,5 @@
 /*
- * The MIT License (MIT)
+* The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -22,38 +22,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_SYSTEM_DEVICE_DEVICE_H
-#define DUX_SYSTEM_DEVICE_DEVICE_H
+#ifndef DUX_X86_CPU_H
+#define DUX_X86_CPU_H
 
-#include <dux/types.h>
-#include <stddef.h>
-#include <stdint.h>
+#define cpu_relax() __asm__ __volatile__("pause" ::: "memory")
+#define cpu_halt() __asm__ __volatile__("hlt" ::: "memory")
+#define cpu_cli() __asm__ __volatile__("cli" ::: "memory")
+#define cpu_sti() __asm__ __volatile__("sti" ::: "memory")
 
-namespace dux::system::device {
-
-using DeviceId = uint32_t;
-
-enum class DeviceType {
-    kBlock,
-    kCharacter,
-};
-
-class IDevice
-{
-public:
-    virtual ~IDevice() = default;
-
-    virtual DeviceId id() const noexcept = 0;
-    virtual const char *name() const noexcept = 0;
-    virtual DeviceType type() const noexcept = 0;
-
-    virtual int ioctl(unsigned long request, void *argument) = 0;
-    virtual int flush() = 0;
-
-    virtual ssize_t read(void *buffer, size_t size) = 0;
-    virtual ssize_t write(const void *buffer, size_t size) = 0;
-};
-
-} // namespace dux::system::device
-
-#endif //DUX_SYSTEM_DEVICE_DEVICE_H
+#endif //DUX_X86_CPU_H

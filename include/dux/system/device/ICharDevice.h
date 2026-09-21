@@ -26,23 +26,17 @@
 #define DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H
 
 #include <dux/system/device/IDevice.h>
-#include <dux/types.h>
-#include <stddef.h>
 
-namespace dux::system::device
-{
-class ICharDevice: public IDevice
+namespace dux::system::device {
+class ICharDevice : public IDevice
 {
 public:
     ~ICharDevice() = default;
-    DeviceType type() const noexcept final
-    {
-        return DeviceType::kCharacter;
-    }
+    DeviceType type() const noexcept final { return DeviceType::kCharacter; }
 
-    virtual ssize_t read(void *buffer, size_t size) = 0;
-    virtual ssize_t write(const void *buffer, size_t size) = 0;
+    virtual ssize_t readChars(char *buffer, size_t size) { return read(buffer, size); }
+    virtual ssize_t writeChars(const char *buffer, size_t size) { return write(buffer, size); }
 };
-}
+} // namespace dux::system::device
 
 #endif //DUX_SYSTEM_DEVICE_ICHARACTERDEVICE_H

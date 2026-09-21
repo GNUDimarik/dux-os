@@ -6,26 +6,41 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-add_executable(dux main.cpp
+set(DUX_SOURCES
+        main.cpp
         include/dux/system/device/IDevice.h
         include/dux/system/device/ICharDevice.h
         include/dux/system/device/IBlockDevice.h
         include/dux/types.h
-        include/arch/x86/asm.h
         kernel/printk.cpp
         include/dux/kernel/printk.h
         include/dux/kernel/console.h
-        kernel/arch/x86/early_console.cpp
         include/dux/system/device/video/IConsole.h
-        drivers/char/video/vga/text/x86/EarlyConsole.cpp
-        drivers/char/video/vga/text/x86/EarlyConsole.h
         include/dux/system/device/AbstractDevice.h
+        kernel/errno.cpp
+        include/dux/irq_save_lock.h
 )
+
+if (ARCH STREQUAL "x86")
+    list(APPEND DUX_SOURCES
+            arch/x86/boot.S
+            kernel/arch/x86/early_console.cpp
+            drivers/char/video/vga/text/x86/EarlyConsole.cpp
+            drivers/char/video/vga/text/x86/EarlyConsole.h
+    )
+endif ()
+
+
+add_executable(${PROJECT_NAME} ${DUX_SOURCES})
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/arch/${ARCH}
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-        lib/libstdc/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/dux
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/libstdc/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/libstdc/include/arch/${ARCH}
 )
 
 target_compile_options(${PROJECT_NAME}
@@ -43,6 +58,10 @@ target_link_options(${PROJECT_NAME}
         PRIVATE
         -nostdlib
         -nodefaultlibs
+        -static
+        -no-pie
+        -Wl,-T,${CMAKE_CURRENT_SOURCE_DIR}/arch/${ARCH}/linker.ld
+        -Wl,--gc-sections
 )
 
 add_subdirectory(lib)
