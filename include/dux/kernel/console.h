@@ -28,7 +28,29 @@
 #include <stddef.h>
 
 namespace dux::kernel {
-int console_write(const char *str, size_t len);
+
+enum class Color : int {
+    kBlack = 0,
+    kBlue = 1,
+    kGreen = 2,
+    kCyan = 3,
+    kRed = 4,
+    kMagenta = 5,
+    kBrown = 6,
+    kLightGray = 7,
+    kDarkGray = 8,
+    kLightBlue = 9,
+    kLightGreen = 10,
+    kLightCyan = 11,
+    kLightRed = 12,
+    kPink = 13,
+    kYellow = 14,
+    kWhite = 15,
+};
+
+int console_init(char* base, int width, int height);
+int console_write(const char *str, int len);
+int console_clear(Color = Color::kDarkGray);
 }
 
 #endif //DUX_KERNEL_CONSOLE_H

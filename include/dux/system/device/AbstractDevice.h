@@ -40,7 +40,8 @@ public:
     const char *name() const noexcept override { return name_; }
     int ioctl(unsigned long request, void *argument) override { return -ENOTSUP; }
     int flush() override { return 0; }
-
+    ssize_t read(void *buffer, size_t size) override { return -ENOTSUP; }
+    ssize_t write(const void *buffer, size_t size) override { return -ENOTSUP; }
 private:
     DeviceId id_;
     const char *name_;

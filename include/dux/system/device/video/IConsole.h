@@ -35,6 +35,8 @@ public:
     virtual ~IConsole() = default;
     virtual int writeChar(int c, int attr) = 0;
     virtual int writeString(const char *str, int attr) = 0;
+    virtual void clear(int attr = 0) = 0;
+    virtual void setCursor(int x, int y) = 0;
 };
 } // namespace dux::system::device::video
 

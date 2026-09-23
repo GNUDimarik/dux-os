@@ -8,15 +8,10 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 set(DUX_SOURCES
         main.cpp
-        include/dux/system/device/IDevice.h
-        include/dux/system/device/ICharDevice.h
-        include/dux/system/device/IBlockDevice.h
         include/dux/types.h
         kernel/printk.cpp
         include/dux/kernel/printk.h
         include/dux/kernel/console.h
-        include/dux/system/device/video/IConsole.h
-        include/dux/system/device/AbstractDevice.h
         kernel/errno.cpp
         include/dux/irq_save_lock.h
 )
@@ -24,9 +19,7 @@ set(DUX_SOURCES
 if (ARCH STREQUAL "x86")
     list(APPEND DUX_SOURCES
             arch/x86/boot.S
-            kernel/arch/x86/early_console.cpp
-            drivers/char/video/vga/text/x86/EarlyConsole.cpp
-            drivers/char/video/vga/text/x86/EarlyConsole.h
+            kernel/arch/x86/console.cpp
     )
 endif ()
 
@@ -38,9 +31,9 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}/include/arch/${ARCH}
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/include/dux
-
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/libstdc/include
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/libstdc/include/arch/${ARCH}
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_compile_options(${PROJECT_NAME}

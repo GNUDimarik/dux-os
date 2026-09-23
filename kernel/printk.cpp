@@ -27,13 +27,14 @@
 #include <dux/kernel/console.h>
 #include <dux/kernel/printk.h>
 #include <dux/spin_lock.h>
-
-static constexpr char kPanicMessage[] = "Kernel panic: ";
-static constexpr size_t kBufferSize = 1024;
+#include <string.h>
 
 namespace dux::kernel {
 
 namespace {
+static constexpr char kPanicMessage[] = "Kernel panic: ";
+static constexpr int kBufferSize = 1024;
+static constexpr char kErrorMessage[] = "Error: ";
 dux::spin_lock global_lock;
 } // namespace
 
@@ -62,6 +63,34 @@ int printk(const char *fmt, ...)
     va_start(ap, fmt);
     const int result = vprintk_unlocked(fmt, ap);
     va_end(ap);
+    return result;
+}
+
+int printk(const char *tag, const char *fmt, ...)
+{
+    irq_save_lock l(global_lock);
+    int result = strlen(tag);
+    console_write(tag, result);
+    va_list ap;
+    va_start(ap, fmt);
+    result += vprintk_unlocked(fmt, ap);
+    va_end(ap);
+    return result;
+}
+
+int printk_error(const char *tag, const char *fmt, ...)
+{
+    irq_save_lock l(global_lock);
+    console_write(kErrorMessage, sizeof(kErrorMessage) - 1);
+    int result = sizeof(kErrorMessage) - 1;
+    const auto tag_len = strlen(tag);
+    console_write(tag, tag_len);
+    result += tag_len;
+    va_list ap;
+    va_start(ap, fmt);
+    result += vprintk_unlocked(fmt, ap);
+    va_end(ap);
+
     return result;
 }
 

@@ -19,15 +19,6 @@
 #include <asm/asm.h>
 #include <gnu/multiboot2.h>
 
-/* C symbol format. HAVE_ASM_USCORE is defined by configure.  */
-/*#ifdef HAVE_ASM_USCORE
-# define EXT_C(sym)			_ ## sym
-#else
-# define EXT_C(sym)			sym
-#endif*/
-
-#define GRUB_MULTIBOOT_ARCHITECTURE_I386 0
-
 /* The size of our stack (16KB).  */
 #define STACK_SIZE			0x4000
 
@@ -53,12 +44,12 @@ multiboot_header:
 /* magic */
 .long	MULTIBOOT2_HEADER_MAGIC
 /* ISA: i386 */
-.long   GRUB_MULTIBOOT_ARCHITECTURE_I386
+.long   MULTIBOOT2_ARCHITECTURE_I386
 /* Header length.  */
 .long	multiboot_header_end - multiboot_header
 /* checksum */
 .long   0x100000000 - MULTIBOOT2_HEADER_MAGIC \
-        - GRUB_MULTIBOOT_ARCHITECTURE_I386 \
+        - MULTIBOOT2_ARCHITECTURE_I386 \
         - (multiboot_header_end - multiboot_header)
 .short MULTIBOOT_HEADER_TAG_END
 .short 0
@@ -78,7 +69,7 @@ pushl	%ebx
 pushl	%eax
 
 /* Now enter the C main function...  */
-call	EXT_C(cmain)
+call	EXT_C(main)
 
 /* Our stack area.  */
 .comm	stack, STACK_SIZE
