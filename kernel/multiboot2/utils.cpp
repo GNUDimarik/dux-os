@@ -22,36 +22,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_KERNEL_CONSOLE_H
-#define DUX_KERNEL_CONSOLE_H
+#include <gnu/multiboot2.h>
+#include <multiboot2/utils.h>
+#include <posix/posix_strings.h>
 
-#include <stddef.h>
+namespace multiboot2 {
+bool memory_type_to_string(unsigned int type, char *buffer, size_t buffer_len)
+{
+    if (buffer == nullptr || buffer_len == 0) {
+        return false;
+    }
 
-namespace dux::kernel {
+    switch (type) {
+    case MULTIBOOT_MEMORY_AVAILABLE:
+        strlcpy(buffer, "AVAILABLE", buffer_len);
+        break;
 
-enum class Color : int {
-    kBlack = 0,
-    kBlue = 1,
-    kGreen = 2,
-    kCyan = 3,
-    kRed = 4,
-    kMagenta = 5,
-    kBrown = 6,
-    kLightGray = 7,
-    kDarkGray = 8,
-    kLightBlue = 9,
-    kLightGreen = 10,
-    kLightCyan = 11,
-    kLightRed = 12,
-    kPink = 13,
-    kYellow = 14,
-    kWhite = 15,
-};
+    case MULTIBOOT_MEMORY_RESERVED:
+        strlcpy(buffer, "RESERVED", buffer_len);
+        break;
 
-int console_init(char* base, int width, int height);
-int console_write(const char *str, int len);
-int console_write(const char *str, int len, Color color);
-int console_clear(Color = Color::kDarkGray);
+    case MULTIBOOT_MEMORY_ACPI_RECLAIMABLE:
+        strlcpy(buffer, "ACPI", buffer_len);
+        break;
+
+    case MULTIBOOT_MEMORY_NVS:
+        strlcpy(buffer, "NVS", buffer_len);
+        break;
+
+    case MULTIBOOT_MEMORY_BADRAM:
+        strlcpy(buffer, "BADRAM", buffer_len);
+        break;
+
+    default:
+        strlcpy(buffer, "UNKNOWN", buffer_len);
+        break;
+    }
+
+    return true;
 }
-
-#endif //DUX_KERNEL_CONSOLE_H
+} // namespace multiboot2

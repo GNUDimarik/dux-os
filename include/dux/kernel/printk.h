@@ -30,8 +30,7 @@
 namespace dux::kernel {
 
 int printk(const char *fmt, ...);
-int printk(const char* tag, const char *fmt, ...);
-int printk_error(const char* tag, const char *fmt, ...);
+int printk_error(const char *tag, const char *fmt, ...);
 int vprintk(const char *fmt, va_list args);
 int vprintk(const char *fmt, va_list args);
 [[noreturn]] void panic(const char *fmt, ...);

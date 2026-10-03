@@ -78,26 +78,10 @@ int printk(const char *tag, const char *fmt, ...)
     return result;
 }
 
-int printk_error(const char *tag, const char *fmt, ...)
-{
-    irq_save_lock l(global_lock);
-    console_write(kErrorMessage, sizeof(kErrorMessage) - 1);
-    int result = sizeof(kErrorMessage) - 1;
-    const auto tag_len = strlen(tag);
-    console_write(tag, tag_len);
-    result += tag_len;
-    va_list ap;
-    va_start(ap, fmt);
-    result += vprintk_unlocked(fmt, ap);
-    va_end(ap);
-
-    return result;
-}
-
 [[noreturn]] void panic(const char *fmt, ...)
 {
     irq_save_lock l(global_lock);
-    console_write(kPanicMessage, sizeof(kPanicMessage) - 1);
+    console_write(kPanicMessage, sizeof(kPanicMessage) - 1, Color::kLightRed);
     va_list ap;
     va_start(ap, fmt);
     vprintk_unlocked(fmt, ap);

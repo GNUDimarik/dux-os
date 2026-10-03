@@ -1,5 +1,5 @@
 /*
-* The MIT License (MIT)
+ * The MIT License (MIT)
  *
  * Copyright (c) 2026 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -21,18 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #include <dux/kernel/console.h>
+
 #include <errno.h>
+#include <stdint.h>
 #include <string.h>
 
 namespace {
 
 using namespace dux::kernel;
 
-char *g_base = nullptr;
+uint16_t *g_base = nullptr;
 int g_pos = 0;
 int g_width = 0;
 int g_height = 0;
+
 int g_background = static_cast<int>(Color::kDarkGray);
 int g_char_attr = static_cast<int>(Color::kWhite);
 
@@ -41,20 +45,37 @@ int size()
     return g_width * g_height;
 }
 
+uint16_t make_char(int c, int attr)
+{
+    return (static_cast<uint16_t>(attr) << 8) |
+           static_cast<uint8_t>(c);
+}
+
+void memsetw(uint16_t *dst, uint16_t value, int count)
+{
+    while (count--) {
+        *dst++ = value;
+    }
+}
+
 void put(int pos, int c, int attr)
 {
-    g_base[pos * 2] = static_cast<char>(c);
-    g_base[pos * 2 + 1] = static_cast<char>(attr);
+    g_base[pos] = make_char(c, attr);
 }
 
 void scroll()
 {
-    memmove(g_base, g_base + g_width * 2, (g_height - 1) * g_width * 2);
+    memmove(
+        g_base,
+        g_base + g_width,
+        (g_height - 1) * g_width * sizeof(uint16_t));
+
     const int first = (g_height - 1) * g_width;
 
-    for (int i = first; i < size(); ++i) {
-        put(i, ' ', g_background);
-    }
+    memsetw(
+        g_base + first,
+        make_char(' ', g_background),
+        g_width);
 
     g_pos = first;
 }
@@ -62,7 +83,7 @@ void scroll()
 int put_char(int c, int attr)
 {
     if (!g_base) {
-        return g_pos;
+        return -EINVAL;
     }
 
     if (c == '\n') {
@@ -84,16 +105,39 @@ namespace dux::kernel {
 
 int console_init(char *base, int width, int height)
 {
-    g_base = base;
+    if (!base || width <= 0 || height <= 0) {
+        return -EINVAL;
+    }
+
+    g_base = reinterpret_cast<uint16_t *>(base);
     g_width = width;
     g_height = height;
+    g_pos = 0;
+
     return g_pos;
 }
 
 int console_write(const char *str, int len)
 {
-    while (*str) {
-        put_char(*str++, g_char_attr);
+    if (!g_base || !str) {
+        return -EINVAL;
+    }
+
+    for (int i = 0; i < len; ++i) {
+        put_char(str[i], g_char_attr);
+    }
+
+    return g_pos;
+}
+
+int console_write(const char *str, int len, Color color)
+{
+    if (!g_base || !str) {
+        return -EINVAL;
+    }
+
+    for (int i = 0; i < len; ++i) {
+        put_char(str[i], static_cast<int>(color));
     }
 
     return g_pos;
@@ -105,11 +149,14 @@ int console_clear(int attr)
         return -EINVAL;
     }
 
-    for (int i = 0; i < size(); ++i) {
-        put(i, ' ', attr);
-    }
+    memsetw(
+        g_base,
+        make_char(' ', attr),
+        size());
 
     g_pos = 0;
+
     return g_pos;
 }
+
 } // namespace dux::kernel

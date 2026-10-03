@@ -22,36 +22,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_KERNEL_CONSOLE_H
-#define DUX_KERNEL_CONSOLE_H
+#ifndef DUX_UTILS_H
+#define DUX_UTILS_H
 
 #include <stddef.h>
 
-namespace dux::kernel {
-
-enum class Color : int {
-    kBlack = 0,
-    kBlue = 1,
-    kGreen = 2,
-    kCyan = 3,
-    kRed = 4,
-    kMagenta = 5,
-    kBrown = 6,
-    kLightGray = 7,
-    kDarkGray = 8,
-    kLightBlue = 9,
-    kLightGreen = 10,
-    kLightCyan = 11,
-    kLightRed = 12,
-    kPink = 13,
-    kYellow = 14,
-    kWhite = 15,
-};
-
-int console_init(char* base, int width, int height);
-int console_write(const char *str, int len);
-int console_write(const char *str, int len, Color color);
-int console_clear(Color = Color::kDarkGray);
+namespace multiboot2 {
+bool memory_type_to_string(unsigned int type, char *buffer, size_t buffer_len);
 }
 
-#endif //DUX_KERNEL_CONSOLE_H
+#endif //DUX_UTILS_H
