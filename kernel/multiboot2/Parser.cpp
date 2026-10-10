@@ -22,14 +22,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef DUX_UTILS_H
-#define DUX_UTILS_H
-
-#include <stddef.h>
+#include <multiboot2/Parser.h>
 
 namespace multiboot2 {
-bool memory_type_to_string(unsigned int type, char *buffer, size_t buffer_len);
-bool tag_type_to_string(unsigned int type, char *buffer, size_t buffer_len);
+
+Parser::Parser(void *addr)
+    : base_(reinterpret_cast<uintptr_t>(addr))
+{}
+
+Parser::Parser(uint32_t addr)
+    : base_(reinterpret_cast<uintptr_t>(addr))
+{}
+Parser::iterator Parser::begin()
+{
+    return iterator{firstTag()};
 }
 
-#endif //DUX_UTILS_H
+Parser::iterator Parser::end()
+{
+    return iterator{lastTag()};
+}
+
+Parser::const_iterator Parser::begin() const
+{
+    return const_iterator{firstTag()};
+}
+
+Parser::const_iterator Parser::end() const
+{
+    return const_iterator{lastTag()};
+}
+
+const Multiboot2Info *Parser::getInfo() const
+{
+    return reinterpret_cast<Multiboot2Info *>(base_);
+}
+
+multiboot_tag *Parser::firstTag() const
+{
+    return reinterpret_cast<multiboot_tag *>(base_ + sizeof(Multiboot2Info));
+}
+
+multiboot_tag *Parser::lastTag() const
+{
+    return reinterpret_cast<multiboot_tag *>(base_ + getInfo()->total_size - sizeof(multiboot_tag));
+}
+
+} // namespace multiboot2
+// namespace multiboot2

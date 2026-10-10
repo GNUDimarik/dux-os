@@ -16,6 +16,8 @@ set(DUX_SOURCES
         include/dux/irq_save_lock.h
         include/multiboot2/utils.h
         kernel/multiboot2/utils.cpp
+        kernel/multiboot2/Parser.cpp
+        include/multiboot2/Parser.h
 )
 
 if (ARCH STREQUAL "x86")

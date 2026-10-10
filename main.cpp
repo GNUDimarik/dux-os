@@ -4,6 +4,7 @@
 #include <dux/kernel/printk.h>
 #include <gnu/multiboot2.h>
 #include <malloc.h>
+#include <multiboot2/Parser.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -108,9 +109,17 @@ void main(uint32_t magic, uint32_t addr)
         if (heap_size > 0) {
             libstdc_allocator_initialize(reinterpret_cast<void *>(first_free), heap_size);
             char *string = new char[BUFFER_SIZE];
-            strcpy(string, "Hello World!");
             printk("string is %s\n", string);
-            libstdc_dump_memory();
+            //libstdc_dump_memory();
+            multiboot2::Parser parser(addr);
+            int index = 0;
+
+            for (const auto &i : parser) {
+                multiboot2::tag_type_to_string(i.type, string, BUFFER_SIZE);
+                printk("tag[%d] type '%s'\n", index++, string);
+            }
+
+            delete[] string;
         } else {
             panic("No memory");
         }
