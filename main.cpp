@@ -53,22 +53,27 @@ void main(uint32_t magic, uint32_t addr)
         const auto kernel_begin = reinterpret_cast<uintptr_t>(__kernel_start);
         const auto kernel_end = reinterpret_cast<uintptr_t>(__kernel_end);
 
-        struct multiboot_tag *tag;
         char buffer[BUFFER_SIZE];
-        memset(buffer, 0, BUFFER_SIZE);
+        memset(buffer, 0, sizeof(buffer));
+        int index = 0;
+        multiboot2::Parser parser(reinterpret_cast<void *>(addr));
 
-        for (tag = reinterpret_cast<multiboot_tag *>(addr + 8); tag->type != MULTIBOOT_TAG_TYPE_END;
-             tag = reinterpret_cast<multiboot_tag *>(
-                 reinterpret_cast<multiboot_uint8_t *>(tag) + ((tag->size + 7) & ~7))) {
-            switch (tag->type) {
-            case MULTIBOOT_TAG_TYPE_MMAP:
-                for (multiboot_memory_map_t *mmap = ((struct multiboot_tag_mmap *) tag)->entries;
-                     reinterpret_cast<multiboot_uint8_t *>(mmap)
-                     < (multiboot_uint8_t *) tag + tag->size;
-                     mmap = (multiboot_memory_map_t *) ((unsigned long) mmap
-                                                        + ((struct multiboot_tag_mmap *) tag)
-                                                              ->entry_size)) {
-                    multiboot2::memory_type_to_string(mmap->type, buffer, BUFFER_SIZE);
+        for (const auto &tag : parser) {
+            multiboot2::tag_type_to_string(tag.type, buffer, BUFFER_SIZE);
+            printk("tag[%d] type '%s'\n", index++, buffer);
+            switch (tag.type) {
+            case MULTIBOOT_TAG_TYPE_MMAP: {
+                const auto *mmap_tag = reinterpret_cast<const multiboot_tag_mmap *>(&tag);
+
+                const auto *tag_end = reinterpret_cast<const uint8_t *>(mmap_tag) + mmap_tag->size;
+
+                for (auto *entry = reinterpret_cast<const uint8_t *>(mmap_tag->entries);
+                     entry + sizeof(multiboot_memory_map_t) <= tag_end;
+                     entry += mmap_tag->entry_size) {
+                    const auto *mmap = reinterpret_cast<const multiboot_memory_map_t *>(entry);
+
+                    multiboot2::memory_type_to_string(mmap->type, buffer, sizeof(buffer));
+
                     const unsigned long long bytes = static_cast<unsigned long long>(mmap->len);
 
                     const unsigned long long mb = bytes / (1024ULL * 1024ULL);
@@ -92,7 +97,9 @@ void main(uint32_t magic, uint32_t addr)
                                     & ~static_cast<size_t>(7);
                     }
                 }
+
                 break;
+            }
             }
         }
 
@@ -108,18 +115,14 @@ void main(uint32_t magic, uint32_t addr)
 
         if (heap_size > 0) {
             libstdc_allocator_initialize(reinterpret_cast<void *>(first_free), heap_size);
-            char *string = new char[BUFFER_SIZE];
-            printk("string is %s\n", string);
-            //libstdc_dump_memory();
-            multiboot2::Parser parser(addr);
-            int index = 0;
-
-            for (const auto &i : parser) {
-                multiboot2::tag_type_to_string(i.type, string, BUFFER_SIZE);
-                printk("tag[%d] type '%s'\n", index++, string);
-            }
-
-            delete[] string;
+            char *the_string = new char[BUFFER_SIZE];
+            strcpy(the_string, "Hello world from DUX!");
+            printk("the_string '%s' %p\n", the_string, the_string);
+            size_t* ptr = (size_t*) (the_string - sizeof(size_t));
+            printk("ptr %p value %zu\n", ptr, *ptr);
+            libstdc_dump_memory();
+            delete[] the_string;
+            libstdc_dump_memory();
         } else {
             panic("No memory");
         }
